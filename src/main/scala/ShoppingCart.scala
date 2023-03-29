@@ -23,7 +23,10 @@ object ShoppingCart {
 
   private def calculateCartCost(cart: List[CartItem]) = {
     cart
-      .map(cartItem => cartItem.count * cartItem.inventoryInfo.priceInPounds)
+      .map(cartItem => cartItem.inventoryInfo.offer
+        .fold(cartItem.count * cartItem.inventoryInfo.priceInPounds) // no offers
+        (offer => offer.calc(cartItem.count, cartItem.inventoryInfo.priceInPounds)) // with offers
+      )
       .sum
   }
 

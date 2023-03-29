@@ -1,3 +1,4 @@
+import OfferType.{Buy1_Get1Free, PriceOf2_For3}
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 
@@ -16,7 +17,7 @@ class ShoppingCartTest extends AnyFunSpec with Matchers {
       totalCost should be(Success(0))
     }
 
-    it("should calculate checkout cost when all items exist in inventory") {
+    it("should calculate checkout cost when all items exist in inventory and items have no offers") {
       val itemInventory = ItemInventory(List(
         InventoryInfo("Apple", 0.6),
         InventoryInfo("Orange", 0.25)
@@ -26,6 +27,22 @@ class ShoppingCartTest extends AnyFunSpec with Matchers {
       val totalCost = ShoppingCart.calculateCheckoutCost(itemInventory, itemNamesAdded)
 
       totalCost should be(Success(2.05))
+    }
+
+    it("should calculate checkout cost when items have offers") {
+      val itemInventory = ItemInventory(List(
+        InventoryInfo("Apple", 0.6, Some(Buy1_Get1Free)),
+        InventoryInfo("Orange", 0.25, Some(PriceOf2_For3))
+      ))
+      val totalCostOf3Apple1Orange = ShoppingCart.calculateCheckoutCost(itemInventory,
+        List("Apple", "Apple", "Orange", "Apple"))
+
+      totalCostOf3Apple1Orange should be(Success(1.45))
+
+      val totalCostOf2Apple4Orange = ShoppingCart.calculateCheckoutCost(itemInventory,
+        List("Orange", "Apple", "Apple", "Orange", "Orange", "Orange"))
+
+      totalCostOf2Apple4Orange should be(Success(1.35))
     }
 
     it("should fail if a non existing item passed to the cart which is not in the inventory") {
